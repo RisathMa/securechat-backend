@@ -1,8 +1,8 @@
 # Use official Erlang image
 FROM erlang:26-alpine
 
-# Install build deps
-RUN apk add --no-cache git make gcc libc-dev openssl-dev
+# Install build deps and compatibility layer for DNS
+RUN apk add --no-cache git make gcc libc-dev openssl-dev libc6-compat
 
 WORKDIR /app
 
