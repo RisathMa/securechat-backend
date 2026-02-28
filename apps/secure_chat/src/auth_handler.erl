@@ -20,7 +20,7 @@ init(Req, State) ->
 handle_request(<<"/api/register">>, #{<<"email">> := Email, <<"password">> := Password, <<"username">> := Username, <<"public_key">> := PublicKey}) ->
     case db_manager:register_user(Email, Password, Username, PublicKey) of
         {ok, _} -> #{<<"status">> => <<"success">>, <<"message">> => <<"User registered">>};
-        {error, Reason} -> #{<<"status">> => <<"error">>, <<"message">> => list_to_binary(atom_to_list(Reason))}
+        {error, Reason} -> #{<<"status">> => <<"error">>, <<"message">> => format_error(Reason)}
     end;
 handle_request(<<"/api/login">>, #{<<"email">> := Email, <<"password">> := Password}) ->
     case db_manager:validate_login(Email, Password) of
@@ -31,6 +31,10 @@ handle_request(<<"/api/login">>, #{<<"email">> := Email, <<"password">> := Passw
     end;
 handle_request(_, _) ->
     #{<<"status">> => <<"error">>, <<"message">> => <<"Invalid request">>}.
+
+format_error(Atom) when is_atom(Atom) -> list_to_binary(atom_to_list(Atom));
+format_error({error, _, _, Code, Message, _}) -> <<(list_to_binary(atom_to_list(Code)))/binary, ": ", Message/binary>>;
+format_error(_) -> <<"Internal server error">>.
 
 generate_jwt(User) ->
     %% Placeholder for JWT generation using JOSE
