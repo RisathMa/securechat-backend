@@ -32,7 +32,10 @@ init([]) ->
         {database, Name},
         {port, Port},
         {ssl, true},
-        {ssl_opts, [{verify, verify_none}]},
+        {ssl_opts, [
+            {verify, verify_none},
+            {server_name_indication, Host}
+        ]},
         {timeout, 10000}
     ],
 
