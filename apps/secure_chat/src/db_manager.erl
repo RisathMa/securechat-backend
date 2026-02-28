@@ -71,7 +71,13 @@ ensure_tables(Conn) ->
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )"
     ],
-    lists:foreach(fun(Q) -> {ok, _, _} = epgsql:squery(Conn, Q) end, Queries),
+    lists:foreach(fun(Q) -> 
+        case epgsql:squery(Conn, Q) of
+            [{ok, _, _}] -> ok;
+            [{ok, _}] -> ok;
+            Error -> io:format("[DB] Table Init Error: ~p~n", [Error])
+        end
+    end, Queries),
     ok.
 
 
