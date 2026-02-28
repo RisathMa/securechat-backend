@@ -11,8 +11,10 @@ start(_StartType, _StartArgs) ->
             {"/ws", ws_handler, []}
         ]}
     ]),
+    PortStr = os:getenv("PORT", "8080"),
+    {Port, _} = string:to_integer(PortStr),
     {ok, _} = cowboy:start_clear(my_http_listener,
-        [{port, 8080}],
+        [{ip, {0,0,0,0}}, {port, Port}],
         #{env => #{dispatch => Dispatch}}
     ),
     secure_chat_sup:start_link().
