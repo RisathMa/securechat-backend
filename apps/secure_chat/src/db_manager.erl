@@ -24,19 +24,21 @@ init([]) ->
     Pass = application:get_env(secure_chat, db_pass, "password"),
     Name = application:get_env(secure_chat, db_name, "secure_chat"),
     
-    io:format("~n[DB] Attempting connection:~n"),
-    io:format("  Host: ~s:~p, User: ~s, DB: ~s~n", [Host, Port, User, Name]),
+    %% SNI must be a character list for Erlang's ssl module
+    SNIHost = if is_binary(Host) -> binary_to_list(Host); true -> Host end,
+    
+    io:format("~n[DB] Attempting connection to ~s:~p~n", [Host, Port]),
+    io:format("  User: ~s, DB: ~s, SNI: ~s~n", [User, Name, SNIHost]),
 
-    %% SSL required for Supabase
     ConnOptions = [
         {database, Name},
         {port, Port},
         {ssl, true},
         {ssl_opts, [
             {verify, verify_none},
-            {server_name_indication, Host}
+            {server_name_indication, SNIHost}
         ]},
-        {timeout, 10000}
+        {timeout, 15000}
     ],
 
     case epgsql:connect(Host, User, Pass, ConnOptions) of
