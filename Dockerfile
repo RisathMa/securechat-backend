@@ -1,8 +1,8 @@
-# Use official Erlang image
-FROM erlang:26-alpine
+# Use official Erlang image (Debian-based to avoid Alpine DNS bugs)
+FROM erlang:26
 
-# Install build deps and compatibility layer for DNS
-RUN apk add --no-cache git make gcc libc-dev openssl-dev libc6-compat
+# Install build deps
+RUN apt-get update && apt-get install -y git make gcc libc-dev libssl-dev
 
 WORKDIR /app
 
