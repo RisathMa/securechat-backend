@@ -1,0 +1,20 @@
+# Rebar3
+_build/
+rebar3.crashdump
+
+# Erlang
+*.beam
+*.ez
+*.erl_crash.dump
+.eunit/
+.rebar/
+erl_crash.dump
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
