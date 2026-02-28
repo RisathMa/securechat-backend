@@ -43,22 +43,37 @@ init([]) ->
 
     case epgsql:connect(Host, User, Pass, ConnOptions) of
         {ok, Conn} -> 
-            io:format("[DB] SUCCESS: Connected!~n~n"),
+            io:format("[DB] SUCCESS: Connected!~n"),
+            %% Ensure tables exist
+            ok = ensure_tables(Conn),
+            io:format("[DB] Tables verified/created.~n~n"),
             {ok, #{conn => Conn}};
         {error, Reason} ->
             io:format("~n[DB] !!! CONNECTION FAILED !!!~n"),
             io:format("  Reason: ~p~n", [Reason]),
-            case Reason of
-                sock_closed ->
-                    io:format("  Hint: The server closed the connection immediately.~n"),
-                    io:format("  Try this command in your Postgres Terminal (psql) to allow local connections:~n"),
-                    io:format("  ALTER USER postgres WITH PASSWORD 'Pumalka';~n");
-                invalid_authorization_specification ->
-                    io:format("  Hint: Check your password in config/sys.config.~n");
-                _ -> ok
-            end,
             {stop, {db_connection_failed, Reason}}
     end.
+
+ensure_tables(Conn) ->
+    Queries = [
+        "CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            username TEXT NOT NULL,
+            public_key TEXT NOT NULL
+        )",
+        "CREATE TABLE IF NOT EXISTS messages (
+            id SERIAL PRIMARY KEY,
+            sender_id INTEGER NOT NULL,
+            receiver_id INTEGER NOT NULL,
+            encrypted_content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )"
+    ],
+    lists:foreach(fun(Q) -> {ok, _, _} = epgsql:squery(Conn, Q) end, Queries),
+    ok.
+
 
 handle_call({register, Email, Password, Username, PublicKey}, _From, State = #{conn := Conn}) ->
     %% In production, hash the password!
